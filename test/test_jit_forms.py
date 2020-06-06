@@ -4,11 +4,11 @@
 #
 # SPDX-License-Identifier:    LGPL-3.0-or-later
 
-import numpy as np
-
 import cffi
-import ffcx.codegeneration.jit
+import numpy as np
 import pytest
+
+import ffcx.codegeneration.jit
 import ufl
 
 
@@ -338,10 +338,8 @@ def test_interior_facet_integral(mode, compile_args):
 
     facets = np.array([0, 2], dtype=np.int32)
     perms = np.array([0, 1], dtype=np.int32)
-
     coords = np.array([[0.0, 0.0, 1.0, 0.0, 0.0, 1.0],
                        [1.0, 0.0, 0.0, 1.0, 1.0, 1.0]], dtype=np.float64)
-
     integral0.tabulate_tensor(
         ffi.cast('{}  *'.format(c_type), A.ctypes.data),
         ffi.cast('{}  *'.format(c_type), w.ctypes.data),
@@ -356,8 +354,7 @@ def test_conditional(mode, compile_args):
     element = ufl.FiniteElement("Lagrange", cell, 1)
     u, v = ufl.TrialFunction(element), ufl.TestFunction(element)
     x = ufl.SpatialCoordinate(cell)
-    condition = ufl.Or(ufl.ge(ufl.real(x[0] + x[1]), 0.1),
-                       ufl.ge(ufl.real(x[1] + x[1]**2), 0.1))
+    condition = ufl.Or(ufl.ge(ufl.real(x[0] + x[1]), 0.1), ufl.ge(ufl.real(x[1] + x[1]**2), 0.1))
     c1 = ufl.conditional(condition, 2.0, 1.0)
     a = c1 * ufl.inner(ufl.grad(u), ufl.grad(v)) * ufl.dx
 
@@ -366,10 +363,8 @@ def test_conditional(mode, compile_args):
     b = c2 * ufl.conj(v) * ufl.dx
 
     forms = [a, b]
-
     compiled_forms, module = ffcx.codegeneration.jit.compile_forms(
         forms, parameters={'scalar_type': mode}, cffi_extra_compile_args=compile_args)
-
     form0 = compiled_forms[0][0].create_cell_integral(-1)
     form1 = compiled_forms[1][0].create_cell_integral(-1)
 
@@ -381,7 +376,6 @@ def test_conditional(mode, compile_args):
     c = np.array([], dtype=np.float64)
 
     coords = np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0], dtype=np.float64)
-
     form0.tabulate_tensor(
         ffi.cast('{type} *'.format(type=c_type), A1.ctypes.data),
         ffi.cast('{type} *'.format(type=c_type), w1.ctypes.data),

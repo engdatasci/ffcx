@@ -28,7 +28,8 @@ ufl_data = namedtuple('ufl_data', ['form_data', 'unique_elements', 'element_numb
                                    'unique_coordinate_elements', 'expressions'])
 
 
-def analyze_ufl_objects(ufl_objects: typing.Union[typing.List[ufl.form.Form], typing.List[ufl.FiniteElement],
+def analyze_ufl_objects(ufl_objects: typing.Union[typing.List[ufl.form.Form],
+                                                  typing.List[ufl.FiniteElement],
                                                   typing.List],
                         parameters: typing.Dict) -> ufl_data:
     """Analyze ufl object(s).

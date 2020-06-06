@@ -101,8 +101,7 @@ def _create_fiat_element(ufl_element):
         # Handle quadrilateral case by reconstructing the element with
         # cell TensorProductCell (interval x interval)
         quadrilateral_tpc = ufl.TensorProductCell(ufl.Cell("interval"), ufl.Cell("interval"))
-        return FlattenedDimensions(
-            _create_fiat_element(ufl_element.reconstruct(cell=quadrilateral_tpc)))
+        return FlattenedDimensions(_create_fiat_element(ufl_element.reconstruct(cell=quadrilateral_tpc)))
     elif cellname == "hexahedron":
         # Handle hexahedron case by reconstructing the element with cell
         # TensorProductCell (quadrilateral x interval). This creates
@@ -110,8 +109,7 @@ def _create_fiat_element(ufl_element):
         # interval) Therefore dof entities consists of nested tuples,
         # example: ((0, 1), 1)
         hexahedron_tpc = ufl.TensorProductCell(ufl.Cell("quadrilateral"), ufl.Cell("interval"))
-        return FlattenedDimensions(
-            _create_fiat_element(ufl_element.reconstruct(cell=hexahedron_tpc)))
+        return FlattenedDimensions(_create_fiat_element(ufl_element.reconstruct(cell=hexahedron_tpc)))
 
     # FIXME: AL: Should this really be here?
     # Handle QuadratureElement
@@ -150,7 +148,6 @@ def _create_fiat_element(ufl_element):
                 element = ElementClass(fiat_cell, degree)
 
     if element.value_shape() != ufl_element.reference_value_shape():
-        # Consistency check between UFL and FIAT elements.
         raise RuntimeError("Something went wrong in the construction of FIAT element from UFL element."
                            + "Shapes are {} and {}.".format(element.value_shape(),
                                                             ufl_element.reference_value_shape()))

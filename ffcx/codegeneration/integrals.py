@@ -74,8 +74,7 @@ def generator(ir, parameters):
         code["tabulate_tensor"] = ""
 
     # Format tabulate tensor body
-    tabulate_tensor_declaration = ufc_integrals.tabulate_implementation[
-        integral_type]
+    tabulate_tensor_declaration = ufc_integrals.tabulate_implementation[integral_type]
     tabulate_tensor_fn = tabulate_tensor_declaration.format(
         factory_name=factory_name, tabulate_tensor=code["tabulate_tensor"])
 
@@ -184,7 +183,6 @@ class IntegralGenerator(object):
         assert not any(d for d in self.scopes.values())
 
         parts = []
-
         alignment = self.ir.params['assume_aligned']
         if alignment is not None:
             parts += [L.VerbatimStatement("A = (ufc_scalar_t*)__builtin_assume_aligned(A, {});"
@@ -244,11 +242,8 @@ class IntegralGenerator(object):
             num_points = quadrature_rule.weights.shape[0]
             # Generate quadrature weights array
             wsym = self.backend.symbols.weights_table(quadrature_rule)
-            parts += [
-                L.ArrayDecl(
-                    "static const double", wsym, num_points,
-                    quadrature_rule.weights, alignas=alignas, padlen=padlen)
-            ]
+            parts += [L.ArrayDecl("static const double", wsym, num_points,
+                                  quadrature_rule.weights, alignas=alignas, padlen=padlen)]
 
         # Add leading comment if there are any tables
         parts = L.commented_code_list(parts, "Quadrature rules")
@@ -312,7 +307,9 @@ class IntegralGenerator(object):
 
     def declare_table(self, name, table, alignas, padlen):
         """Declare a table.
-        If the dof dimensions of the table have dof rotations, apply these rotations."""
+        If the dof dimensions of the table have dof rotations, apply these rotations.
+
+        """
         L = self.backend.language
         c_false = L.LiteralBool(False)
 
@@ -384,14 +381,15 @@ class IntegralGenerator(object):
                 warnings.warn("Face tangents an entity of dim != 2 not implemented.")
                 continue
             # Check that either all in the dofmap, or not in the dofmap.
-            # If they are not, skip this pair
+            # If they are not, skip this pair.
             included = [dof in dofmap for dof in dofs]
             if False in included:
                 if True in included:
                     warnings.warn("Non-zero dof may have been stripped from table.")
                 continue
 
-            # Generate statements that rotate the dofs if their face is rotated
+            # Generate statements that rotate the dofs if their face is
+            # rotated
             indices0 = index_names + [dofmap.index(dofs[0])]
             indices1 = index_names + [dofmap.index(dofs[1])]
             body0 = [
@@ -412,6 +410,7 @@ class IntegralGenerator(object):
                 if isinstance(index, str):
                     body0 = L.ForRange(index, 0, table.shape[k], body0)
                     body1 = L.ForRange(index, 0, table.shape[k], body1)
+
             # Do rotation if the face is rotated
             rotations = self.backend.symbols.entity_rotations(L, entity, self.ir.cell_shape)
             parts += [L.If(L.EQ(rotations, 1), body0),
@@ -428,15 +427,15 @@ class IntegralGenerator(object):
         body = L.commented_code_list(
             body, "Quadrature loop body setup for quadrature rule {}".format(quadrature_rule.id()))
 
-        # Generate dofblock parts, some of this
-        # will be placed before or after quadloop
-        preparts, quadparts = \
-            self.generate_dofblock_partition(quadrature_rule)
+        # Generate dofblock parts, some of this will be placed before or
+        # after quadloop
+        preparts, quadparts = self.generate_dofblock_partition(quadrature_rule)
         body += quadparts
 
         # Wrap body in loop or scope
         if not body:
-            # Could happen for integral with everything zero and optimized away
+            # Could happen for integral with everything zero and
+            # optimized away
             quadparts = []
         else:
             num_points = quadrature_rule.points.shape[0]
@@ -453,11 +452,8 @@ class IntegralGenerator(object):
 
         num_points = self.ir.fake_num_points
         chunk_size = self.ir.params["chunk_size"]
-
         gdim = self.ir.geometric_dimension
-
         alignas = self.ir.params["alignas"]
-
         tables = self.ir.unique_tables
         table_types = self.ir.unique_table_types
 
@@ -468,20 +464,21 @@ class IntegralGenerator(object):
             "(chunk_size={0}, analysis_num_points={1})".format(chunk_size, num_points)
         ])
 
-        # Generate dofblock parts, some of this
-        # will be placed before or after quadloop
-        preparts, quadparts = \
-            self.generate_dofblock_partition(num_points)
+        # Generate dofblock parts, some of this will be placed before or
+        # after quadloop
+        preparts, quadparts = self.generate_dofblock_partition(num_points)
         body += quadparts
 
         # Wrap body in loop
         if not body:
-            # Could happen for integral with everything zero and optimized away
+            # Could happen for integral with everything zero and
+            # optimized away
             quadparts = []
         else:
             rule_parts = []
 
-            # Define two-level quadrature loop; over chunks then over points in chunk
+            # Define two-level quadrature loop; over chunks then over
+            # points in chunk
             iq_chunk = L.Symbol("iq_chunk")
             np = self.backend.symbols.num_custom_quadrature_points()
             num_point_blocks = (np + chunk_size - 1) / chunk_size
@@ -492,11 +489,10 @@ class IntegralGenerator(object):
             decl = L.VariableDecl("const int", num_points_in_block,
                                   L.Call("min", (chunk_size, np - iq_chunk * chunk_size)))
             rule_parts.append(decl)
-
             iq_body = L.ForRange(iq, 0, num_points_in_block, body=body)
 
             # Preparations for quadrature rules
-            #
+
             varying_ir = self.ir.varying_irs[num_points]
 
             # Copy quadrature weights for this chunk
@@ -590,13 +586,15 @@ class IntegralGenerator(object):
             v = attr['expression']
             mt = attr.get('mt')
 
-            # Generate code only if the expression is not already in cache
+            # Generate code only if the expression is not already in
+            # cache
             if not self.get_var(quadrature_rule, v):
                 if v._ufl_is_literal_:
                     vaccess = self.backend.ufl_to_language.get(v)
                 elif mt is not None:
-                    # All finite element based terminals have table data, as well
-                    # as some, but not all, of the symbolic geometric terminals
+                    # All finite element based terminals have table
+                    # data, as well as some, but not all, of the
+                    # symbolic geometric terminals
                     tabledata = attr.get('tr')
 
                     # Backend specific modified terminal translation
@@ -675,8 +673,7 @@ class IntegralGenerator(object):
         for blockmap, blockdata in blocks:
 
             # Define code for block depending on mode
-            block_preparts, block_quadparts = \
-                self.generate_block_parts(quadrature_rule, blockmap, blockdata)
+            block_preparts, block_quadparts = self.generate_block_parts(quadrature_rule, blockmap, blockdata)
 
             # Add definitions
             preparts.extend(block_preparts)
@@ -774,8 +771,8 @@ class IntegralGenerator(object):
 
         iq = self.backend.symbols.quadrature_loop_index()
 
-        # Override dof index with quadrature loop index for arguments with
-        # quadrature element, to index B like B[iq*num_dofs + iq]
+        # Override dof index with quadrature loop index for arguments
+        # with quadrature element, to index B like B[iq*num_dofs + iq]
         arg_indices = tuple(self.backend.symbols.argument_loop_index(i) for i in range(block_rank))
         B_indices = []
         for i in range(block_rank):
@@ -818,7 +815,8 @@ class IntegralGenerator(object):
             if not defined:
                 quadparts.append(L.VariableDecl("const ufc_scalar_t", fw, fw_rhs))
 
-        # Naively accumulate integrand for this block in the innermost loop
+        # Naively accumulate integrand for this block in the innermost
+        # loop
         assert not blockdata.transposed
         A_shape = self.ir.tensor_shape
 
@@ -833,7 +831,6 @@ class IntegralGenerator(object):
             A_indices.append(arg_indices[i] + offset)
 
         body = L.AssignAdd(A[A_indices], B_rhs)
-
         for i in reversed(range(block_rank)):
             body = L.ForRange(B_indices[i], 0, blockdims[i], body=body)
         quadparts += [body]

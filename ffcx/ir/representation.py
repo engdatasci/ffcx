@@ -99,17 +99,16 @@ ir_data = namedtuple('ir_data', ['elements', 'dofmaps', 'coordinate_mappings', '
 
 
 def compute_ir(analysis: namedtuple, object_names, prefix, parameters, visualise):
-    """Compute intermediate representation.
-
-    """
+    """Compute intermediate representation."""
 
     logger.info(79 * "*")
     logger.info("Compiler stage 2: Computing intermediate representation of objects")
     logger.info(79 * "*")
 
     # Compute object names
-    # NOTE: This is done here for performance reasons, because repeated calls
-    # within each IR computation would be expensive due to UFL signature computations
+    # NOTE: This is done here for performance reasons, because repeated
+    # calls within each IR computation would be expensive due to UFL
+    # signature computations
     finite_element_names = {e: naming.finite_element_name(e, prefix) for e in analysis.unique_elements}
     dofmap_names = {e: naming.dofmap_name(e, prefix) for e in analysis.unique_elements}
     coordinate_mapping_names = {cmap: naming.coordinate_map_name(
@@ -125,9 +124,7 @@ def compute_ir(analysis: namedtuple, object_names, prefix, parameters, visualise
         for e in analysis.unique_elements
     ]
 
-    ir_dofmaps = [
-        _compute_dofmap_ir(e, analysis.element_numbers, dofmap_names) for e in analysis.unique_elements
-    ]
+    ir_dofmaps = [_compute_dofmap_ir(e, analysis.element_numbers, dofmap_names) for e in analysis.unique_elements]
 
     ir_coordinate_mappings = [
         _compute_coordinate_mapping_ir(e, prefix, analysis.element_numbers,
@@ -245,8 +242,8 @@ def cell_midpoint(cell):
 def _tabulate_coordinate_mapping_basis(ufl_element):
     # TODO: Move this function to a table generation module?
 
-    # Get scalar element, assuming coordinates are represented
-    # with a VectorElement of scalar subelements
+    # Get scalar element, assuming coordinates are represented with a
+    # VectorElement of scalar subelements
     selement = ufl_element.sub_elements()[0]
 
     fiat_element = create_element(selement)
@@ -293,7 +290,6 @@ def _compute_coordinate_mapping_ir(ufl_coordinate_element,
 
     cell = ufl_coordinate_element.cell()
     cellname = cell.cellname()
-
     assert ufl_coordinate_element.value_shape() == (cell.geometric_dimension(), )
 
     # Compute element values via fiat element
@@ -396,16 +392,11 @@ def _compute_integral_ir(form_data, form_index, prefix, element_numbers, integra
             for ufl_element in unique_elements
         }
 
-        ir["element_ids"] = {
-            ufl_element: i
-            for i, ufl_element in enumerate(unique_elements)
-        }
+        ir["element_ids"] = {ufl_element: i for i, ufl_element in enumerate(unique_elements)}
 
-        # Create dimensions of primary indices, needed to reset the argument
-        # 'A' given to tabulate_tensor() by the assembler.
-        argument_dimensions = [
-            ir["element_dimensions"][ufl_element] for ufl_element in form_data.argument_elements
-        ]
+        # Create dimensions of primary indices, needed to reset the
+        # argument 'A' given to tabulate_tensor() by the assembler.
+        argument_dimensions = [ir["element_dimensions"][ufl_element] for ufl_element in form_data.argument_elements]
 
         # Compute shape of element tensor
         if ir["integral_type"] == "interior_facet":
@@ -429,17 +420,17 @@ def _compute_integral_ir(form_data, form_index, prefix, element_numbers, integra
             elif scheme == "vertex":
                 # FIXME: Could this come from FIAT?
                 #
-                # The vertex scheme, i.e., averaging the function value in the
-                # vertices and multiplying with the simplex volume, is only of
-                # order 1 and inferior to other generic schemes in terms of
-                # error reduction. Equation systems generated with the vertex
-                # scheme have some properties that other schemes lack, e.g., the
-                # mass matrix is a simple diagonal matrix. This may be
+                # The vertex scheme, i.e., averaging the function value
+                # in the vertices and multiplying with the simplex
+                # volume, is only of order 1 and inferior to other
+                # generic schemes in terms of error reduction. Equation
+                # systems generated with the vertex scheme have some
+                # properties that other schemes lack, e.g., the mass
+                # matrix is a simple diagonal matrix. This may be
                 # prescribed in certain cases.
                 if degree > 1:
                     warnings.warn(
-                        "Explicitly selected vertex quadrature (degree 1), but requested degree is {}.".
-                        format(degree))
+                        "Explicitly selected vertex quadrature (degree 1), but requested degree is {}.".format(degree))
                 if cellname == "tetrahedron":
                     points, weights = (numpy.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0],
                                                     [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]),
@@ -451,14 +442,11 @@ def _compute_integral_ir(form_data, form_index, prefix, element_numbers, integra
                     # Trapezoidal rule
                     return (numpy.array([[0.0], [1.0]]), numpy.array([1.0 / 2.0, 1.0 / 2.0]))
             else:
-                (points, weights) = create_quadrature_points_and_weights(integral_type, cell, degree,
-                                                                         scheme)
+                points, weights = create_quadrature_points_and_weights(integral_type, cell, degree, scheme)
 
             points = numpy.asarray(points)
             weights = numpy.asarray(weights)
-
             rule = QuadratureRule(points, weights)
-
             if rule not in grouped_integrands:
                 grouped_integrands[rule] = []
 
@@ -501,7 +489,6 @@ def _compute_integral_ir(form_data, form_index, prefix, element_numbers, integra
             _offset += numpy.product(constant.ufl_shape, dtype=numpy.int)
 
         ir["original_constant_offsets"] = original_constant_offsets
-
         ir["precision"] = itg_data.metadata["precision"]
 
         # Create map from number of quadrature points -> integrand
@@ -552,16 +539,10 @@ def _compute_form_ir(form_data, form_id, prefix, element_numbers, finite_element
 
     ir["original_coefficient_position"] = form_data.original_coefficient_positions
 
-    ir["create_coordinate_mapping"] = [
-        coordinate_mapping_names[e] for e in form_data.coordinate_elements
-    ]
-    ir["create_finite_element"] = [
-        finite_element_names[e]
-        for e in form_data.argument_elements + form_data.coefficient_elements
-    ]
-    ir["create_dofmap"] = [
-        dofmap_names[e] for e in form_data.argument_elements + form_data.coefficient_elements
-    ]
+    ir["create_coordinate_mapping"] = [coordinate_mapping_names[e] for e in form_data.coordinate_elements]
+    ir["create_finite_element"] = [finite_element_names[e]
+                                   for e in form_data.argument_elements + form_data.coefficient_elements]
+    ir["create_dofmap"] = [dofmap_names[e] for e in form_data.argument_elements + form_data.coefficient_elements]
 
     fs = {}
     for function in form_data.original_form.arguments() + tuple(form_data.reduced_coefficients):
@@ -612,9 +593,7 @@ def _compute_expression_ir(expression, index, prefix, analysis, parameters, visu
     # Extract dimensions for elements of arguments only
     arguments = ufl.algorithms.extract_arguments(expression)
     argument_elements = tuple(f.ufl_element() for f in arguments)
-    argument_dimensions = [
-        ir["element_dimensions"][ufl_element] for ufl_element in argument_elements
-    ]
+    argument_dimensions = [ir["element_dimensions"][ufl_element] for ufl_element in argument_elements]
 
     tensor_shape = argument_dimensions
     ir["tensor_shape"] = tensor_shape
@@ -658,7 +637,6 @@ def _compute_expression_ir(expression, index, prefix, analysis, parameters, visu
         _offset += numpy.product(constant.ufl_shape, dtype=numpy.int)
 
     ir["original_constant_offsets"] = original_constant_offsets
-
     ir["points"] = points
 
     weights = numpy.array([1.0] * points.shape[0])
@@ -667,7 +645,6 @@ def _compute_expression_ir(expression, index, prefix, analysis, parameters, visu
 
     expression_ir = compute_integral_ir(cell, ir["integral_type"], ir["entitytype"], integrands, tensor_shape,
                                         parameters, visualise)
-
     ir.update(expression_ir)
 
     return ir_expression(**ir)
@@ -908,10 +885,7 @@ def _evaluate_basis(ufl_element, fiat_element, epsilon):
             elif value_rank == 2:
                 # Handle coefficients for tensor valued basis elements.
                 # [Regge]
-                coefficients = [
-                    coeffs[i][p][q] for p in range(e.value_shape()[0])
-                    for q in range(e.value_shape()[1])
-                ]
+                coefficients = [coeffs[i][p][q] for p in range(e.value_shape()[0]) for q in range(e.value_shape()[1])]
             else:
                 raise RuntimeError("Unknown situation with num_components > 1")
 
@@ -967,8 +941,7 @@ def _create_foo_integral(prefix, form_id, integral_type, form_data):
         raise RuntimeError("Expecting at most one default integral of each type.")
     elif len(itg_data) == 1:
         subdomain_ids += [-1]
-        classnames += [naming.integral_name(integral_type, form_data.original_form,
-                                            form_id, "otherwise")]
+        classnames += [naming.integral_name(integral_type, form_data.original_form, form_id, "otherwise")]
 
     for itg_data in form_data.integral_data:
         if isinstance(itg_data.subdomain_id, int):
