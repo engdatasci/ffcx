@@ -137,8 +137,8 @@ extern "C"
     /// Map values of field from physical to reference space which has
     /// been evaluated at points given by
     /// tabulate_reference_dof_coordinates.
-    int (*transform_values)(double* restrict reference_values,
-                            const double* restrict physical_values,
+    int (*transform_values)(ufc_scalar_t* restrict reference_values,
+                            const ufc_scalar_t* restrict physical_values,
                             const double* restrict coordinate_dofs,
                             const ufc_coordinate_mapping* restrict cm);
 
@@ -232,9 +232,9 @@ extern "C"
     ufc_dofmap* (*create_scalar_dofmap)(void);
 
     /// Evaluate basis (and derivatives) of the associated element
-    int (*evaluate_basis_derivatives)(
-        double* restrict reference_values, int order, int num_points,
-        const double* restrict X);
+    int (*evaluate_basis_derivatives)(double* restrict reference_values,
+                                      int order, int num_points,
+                                      const double* restrict X);
 
   } ufc_coordinate_mapping;
 
