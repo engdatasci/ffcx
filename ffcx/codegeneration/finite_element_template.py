@@ -45,8 +45,8 @@ int transform_reference_basis_derivatives_{factory_name}(
 }}
 
 int transform_values_{factory_name}(
-     ufc_scalar_t* restrict reference_values,
-     const ufc_scalar_t* restrict physical_values,
+     double* restrict reference_values,
+     const double* restrict physical_values,
      const double* restrict coordinate_dofs,
      const ufc_coordinate_mapping* restrict cm)
 {{

@@ -137,8 +137,8 @@ extern "C"
     /// Map values of field from physical to reference space which has
     /// been evaluated at points given by
     /// tabulate_reference_dof_coordinates.
-    int (*transform_values)(ufc_scalar_t* restrict reference_values,
-                            const ufc_scalar_t* restrict physical_values,
+    int (*transform_values)(double* restrict reference_values,
+                            const double* restrict physical_values,
                             const double* restrict coordinate_dofs,
                             const ufc_coordinate_mapping* restrict cm);
 
@@ -220,7 +220,7 @@ extern "C"
     /// Return topological dimension of the coordinate_mapping
     int topological_dimension;
 
-    /// Boolean flag for affine 
+    /// Boolean flag for affine
     int is_affine;
 
     /// Return cell shape of the coordinate_mapping
