@@ -10,6 +10,7 @@ import warnings
 
 import ufl
 from ffcx.fiatinterface import create_element
+from ffcx.libtab_interface import create_libtab_elements
 from ufl.finiteelement import MixedElement
 
 logger = logging.getLogger("ffcx")
@@ -261,8 +262,11 @@ class FFCXBackendAccess(object):
         ufl_scalar_element, = set(coordinate_element.sub_elements())
         assert ufl_scalar_element.family() in ("Lagrange", "Q", "S")
         fiat_scalar_element = create_element(ufl_scalar_element)
+        libtab_scalar_element = create_libtab_elements(ufl_scalar_element)[0]
         vertex_scalar_dofs = fiat_scalar_element.entity_dofs()[0]
         num_scalar_dofs = fiat_scalar_element.space_dimension()
+
+        print("num_scalar_dofs = ", num_scalar_dofs, "==", libtab_scalar_element.ndofs)
 
         # Get dof and component
         dof, = vertex_scalar_dofs[mt.component[0]]
@@ -291,8 +295,11 @@ class FFCXBackendAccess(object):
         ufl_scalar_element, = set(coordinate_element.sub_elements())
         assert ufl_scalar_element.family() in ("Lagrange", "Q", "S")
         fiat_scalar_element = create_element(ufl_scalar_element)
+        libtab_scalar_element = create_libtab_elements(ufl_scalar_element)[0]
         vertex_scalar_dofs = fiat_scalar_element.entity_dofs()[0]
         num_scalar_dofs = fiat_scalar_element.space_dimension()
+
+        print("num_scalar_dofs = ", num_scalar_dofs, "==", libtab_scalar_element.ndofs)
 
         # Get edge vertices
         edge = mt.component[0]
@@ -335,7 +342,10 @@ class FFCXBackendAccess(object):
         ufl_scalar_element, = set(coordinate_element.sub_elements())
         assert ufl_scalar_element.family() in ("Lagrange", "Q", "S")
         fiat_scalar_element = create_element(ufl_scalar_element)
+        libtab_scalar_element = create_libtab_elements(ufl_scalar_element)[0]
         num_scalar_dofs = fiat_scalar_element.space_dimension()
+
+        print("num_scalar_dofs = ", num_scalar_dofs, "==", libtab_scalar_element.ndofs)
 
         # Get edge vertices
         facet = self.symbols.entity("facet", mt.restriction)

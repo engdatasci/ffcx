@@ -8,8 +8,7 @@
 import logging
 
 import ufl
-
-from ffcx.fiatinterface import create_element
+from ffcx.libtab_interface import create_libtab_elements
 
 logger = logging.getLogger("ffcx")
 
@@ -18,11 +17,9 @@ def num_coordinate_component_dofs(coordinate_element):
     """Get the number of dofs for a coordinate component for this degree.
 
     """
-    fiat_elements = create_element(coordinate_element).elements()
-    # Extracting only first component degrees of freedom from FIAT
-    fiat_element = fiat_elements[0]
-    assert(all(isinstance(element, type(fiat_element)) for element in fiat_elements))
-    return fiat_element.space_dimension()
+    # Extracting only first component degrees of freedom
+    libtab_element = create_libtab_elements(coordinate_element)[0]
+    return libtab_element.ndofs
 
 
 class FFCXBackendDefinitions(object):
