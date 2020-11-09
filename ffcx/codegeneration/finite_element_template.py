@@ -68,6 +68,7 @@ ufc_finite_element* create_{factory_name}(void)
 {{
   ufc_finite_element* element = (ufc_finite_element*)malloc(sizeof(*element));
 
+  element->libtab_version = {libtab_version};
   element->signature = {signature};
   element->cell_shape = {cell_shape};
   element->topological_dimension = {topological_dimension};

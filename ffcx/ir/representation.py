@@ -24,6 +24,7 @@ from collections import namedtuple
 import numpy
 
 import FIAT
+import libtab
 import ufl
 from ffcx import naming
 from ffcx.fiatinterface import SpaceOfReals, create_element
@@ -52,7 +53,7 @@ ir_form = namedtuple('ir_form', ['id', 'prefix', 'name', 'signature', 'rank',
                                  'get_interior_facet_integral_ids', 'create_vertex_integral',
                                  'get_vertex_integral_ids', 'create_custom_integral',
                                  'get_custom_integral_ids'])
-ir_element = namedtuple('ir_element', ['id', 'name', 'signature', 'cell_shape',
+ir_element = namedtuple('ir_element', ['id', 'name', 'signature', 'libtab_version', 'cell_shape',
                                        'topological_dimension',
                                        'geometric_dimension', 'space_dimension', 'value_shape',
                                        'reference_value_shape', 'degree', 'family', 'evaluate_basis',
@@ -187,6 +188,7 @@ def _compute_element_ir(ufl_element, element_numbers, finite_element_names, epsi
 
     ir["degree"] = ufl_element.degree()
     ir["family"] = ufl_element.family()
+    ir["libtab_version"] = libtab.__version__
 
     ir["evaluate_basis"] = "None"  # _evaluate_basis(ufl_element, fiat_element, epsilon)
     ir["evaluate_dof"] = "None"  # _evaluate_dof(ufl_element, fiat_element)
@@ -218,6 +220,7 @@ def _compute_dofmap_ir(ufl_element, element_numbers, dofmap_names):
 
     # Create FIAT element
     fiat_element = create_element(ufl_element)
+    libtab_elements = create_libtab_elements(ufl_element)
 
     # Store id
     ir = {"id": element_numbers[ufl_element]}

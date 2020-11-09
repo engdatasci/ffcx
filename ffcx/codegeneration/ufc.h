@@ -79,6 +79,9 @@ extern "C"
     /// String identifying the finite element
     const char* signature;
 
+    /// String representing libtab version used
+    const char* libtab_version;
+
     /// Return the cell shape
     ufc_shape cell_shape;
 
@@ -227,7 +230,7 @@ extern "C"
     /// Return topological dimension of the coordinate_mapping
     int topological_dimension;
 
-    /// Boolean flag for affine 
+    /// Boolean flag for affine
     int is_affine;
 
     /// Return cell shape of the coordinate_mapping

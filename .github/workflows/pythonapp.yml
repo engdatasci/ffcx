@@ -24,14 +24,15 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y graphviz libgraphviz-dev pkg-config
+          sudo apt-get install -y graphviz libgraphviz-dev pkg-config libeigen3-dev
       - name: Install dependencies (non-Python, macOS)
         if: runner.os == 'macOS'
-        run: brew install graphviz pkg-config
+        run: brew install graphviz pkg-config eigen
       - name: Install dependencies (Python)
         run: |
           pip install --upgrade pip
           pip install pygraphviz
+	  pip install git+https://github.com/FEniCS/libtab.git --user
           pip install git+https://github.com/FEniCS/fiat.git --user
           pip install git+https://github.com/FEniCS/ufl.git --user
       - name: Lint with flake8

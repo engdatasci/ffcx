@@ -465,6 +465,7 @@ def generator(ir, parameters):
 
     d = {}
     d["factory_name"] = ir.name
+    d["libtab_version"] = "\"{}\"".format(ir.libtab_version)
     d["signature"] = "\"{}\"".format(ir.signature)
     d["geometric_dimension"] = ir.geometric_dimension
     d["topological_dimension"] = ir.topological_dimension
@@ -509,7 +510,7 @@ def generator(ir, parameters):
         fname for _, fname, _, _ in Formatter().parse(ufc_finite_element.factory) if fname
     ]
     assert set(fieldnames) == set(
-        d.keys()), "Mismatch between keys in template and in formattting dict"
+        d.keys()), "Mismatch between keys in template and in formattting dict" + str(set(d.keys()))
 
     # Format implementation code
     implementation = ufc_finite_element.factory.format_map(d)

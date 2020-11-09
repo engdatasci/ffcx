@@ -21,7 +21,6 @@ def create_libtab_elements(ufl_element):
     def rextract(els):
         for e in els:
             if isinstance(e, ufl.MixedElement) \
-               and not isinstance(e, ufl.VectorElement) \
                and not isinstance(e, ufl.TensorElement):
                 rextract(e.sub_elements())
             else:
@@ -34,3 +33,5 @@ def create_libtab_elements(ufl_element):
         elements = list(map(_create_element, elements))
 
     return elements
+
+#               and not isinstance(e, ufl.VectorElement) \
